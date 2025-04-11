@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from database import engine
+# from database import engine
 from models.country import SQLModel
 from routers import countries
 from dotenv import load_dotenv
