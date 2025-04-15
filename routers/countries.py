@@ -1,7 +1,7 @@
 # routers/countries.py
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import select
-from database import get_session
+# from database import get_session
 from typing import List
 from sqlalchemy import text
 
@@ -68,28 +68,39 @@ def get_country_list():
         ]
     }
 
-@router.get("/countries/BD", response_model=CountryDetail)
-def get_country_detail(iso: str):
-    if iso.upper() == "BD":
-        return {
-            "id": "BD",
-            "name": "Bangladesh",
-            "models": [
-                {
-                    "id": "bd-3",
-                    "country": "BD",
-                    "attribution": {
-                        "author": "KTH",
-                        "url": "https://www.energy.kth.se/energy-systems/about-the-division-of-energy-systems-1.937036"
-                    },
-                    "description": "This model is developed...",
-                    "disclaimer": "",
-                    "filters": [...],  # You can paste your filter list here
-                    "levers": [...],   # And levers too
-                    "baseYear": 2020,
-                    "timesteps": [2025, 2030]
-                }
-            ]
-        }
-
-    raise HTTPException(status_code=404, detail="Country not found")
+# mock data 
+country_db = {
+    "NG": {"name": "Nigeria"},
+    "TG": {"name": "Togo"},
+    "IN": {"name": "India"},
+}
+@router.get("/countries/{id}", response_model=CountryDetail)
+def get_country_detail(id: str):
+    country = country_db.get(id.upper())
+    if not country:
+        raise HTTPException(status_code=404, detail="Country not found")
+    return {
+        "id": id.upper(),
+        "name": country["name"],
+        "models":[],
+    }
+# {
+#     "id": "BD",
+#     "name": "Bangladesh",
+#     "models": [
+#         {
+#             "id": "bd-3",
+#             "country": "BD",
+#             "attribution": {
+#                 "author": "KTH",
+#                 "url": "https://www.energy.kth.se/energy-systems/about-the-division-of-energy-systems-1.937036"
+#             },
+#             "description": "This model is developed...",
+#             "disclaimer": "",
+#             "filters": [...],  # You can paste your filter list here
+#             "levers": [...],   # And levers too
+#             "baseYear": 2020,
+#             "timesteps": [2025, 2030]
+#         }
+#     ]
+# }
