@@ -1,12 +1,17 @@
 # routers/countries.py
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import select
 from database import get_session
 from typing import List
+from sqlalchemy import text
 
 from models.country_list import CountryListResponse
 from models.country_detail import CountryDetail
 from models.country import Country
+
+from shapely.geometry import Polygon, shape
+import h3
+import json 
 
 router = APIRouter()
 
@@ -22,7 +27,30 @@ router = APIRouter()
 #         raise HTTPException(status_code=404, detail="Country not found")
 #     return country
 
+# test for hex demands data
+@router.get("/hex/tgo")
+def get_tgo(
+    resolution: int = Query(5, ge=4, le=6), 
+    session= Depends(get_session)):
+    hex_col = f"hex{resolution}"
+    query = text(f"""
+                 SELECT 
+  {hex_col} AS hex_id, 
+  SUM("GDP") AS gdp 
+FROM public."TGO_hex_demands"
+GROUP BY {hex_col}
+HAVING SUM("GDP") > 20000000
+      """)
+    rows = session.execute(query).mappings().all()
+    results = []
+    for row in rows:
+        results.append({
+            "GDP": row["gdp"],
+            "h3_hex8": row["hex_id"]
+        })
+    print(len(results))
 
+    return results
 
 @router.get("/countries", response_model=CountryListResponse)
 def get_country_list():
@@ -35,7 +63,8 @@ def get_country_list():
             {"id": "BF", "name": "Burkina Faso"},
             {"id": "BI", "name": "Burundi"},
             {"id": "KH", "name": "Cambodia"},
-            {"id": "CM", "name": "Cameroon"}
+            {"id": "CM", "name": "Cameroon"},
+            {"id":"TG", "name": "Togo"},
         ]
     }
 
