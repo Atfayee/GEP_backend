@@ -24,7 +24,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-SQLModel.metadata.create_all(engine)
+# SQLModel.metadata.create_all(engine)
 
    
 
