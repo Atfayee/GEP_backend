@@ -5,7 +5,6 @@ from database import get_session
 from typing import List
 from sqlalchemy import text
 from fastapi.responses import JSONResponse
-import duckdb
 import os
 from dotenv import load_dotenv
 
@@ -98,29 +97,6 @@ def get_fiberPromise_texas(
 
     return results
 
-# @router.get("/duckdb")
-# def test_duckdb():
-#     try:
-#         con = duckdb.connect()
-#         con.execute("INSTALL postgres_scanner;")
-#         con.execute("LOAD postgres_scanner;")
-
-#         conn_str = f"host={PG_HOST} port={PG_PORT} dbname={PG_DATABASE} user={PG_USER} password={PG_PASSWORD}"
-#         query = f"""
-#             SELECT * FROM postgres_scan(
-#                 '{conn_str}',
-#                 'public',
-#                 'fiber_promise'
-#             )
-#         """
-#         df = con.execute(query).fetchdf()
-#         return JSONResponse(content=df.to_dict(orient='records'))
-
-#     except Exception as e:
-#         return JSONResponse(status_code=500, content={"error": str(e)})
-
-
-
 
 
 
@@ -129,7 +105,8 @@ def get_fiberPromise_texas(
 def get_country_list():
     return {
         "countries": [
-            {"id": "AO", "name": "Angola"},
+            {"id": "NG", "name": "Nigeria"},
+            {"id":"TG", "name": "Togo"},
             {"id": "BD", "name": "Bangladesh"},
             {"id": "BJ", "name": "Benin"},
             {"id": "BW", "name": "Botswana"},
@@ -137,19 +114,19 @@ def get_country_list():
             {"id": "BI", "name": "Burundi"},
             {"id": "KH", "name": "Cambodia"},
             {"id": "CM", "name": "Cameroon"},
-            {"id":"TG", "name": "Togo"},
+            
         ]
     }
 
 # mock data 
-country_db = {
+mock_country_db = {
     "NG": {"name": "Nigeria"},
     "TG": {"name": "Togo"},
     "IN": {"name": "India"},
 }
 @router.get("/countries/{id}", response_model=CountryDetail)
 def get_country_detail(id: str):
-    country = country_db.get(id.upper())
+    country = mock_country_db.get(id.upper())
     if not country:
         raise HTTPException(status_code=404, detail="Country not found")
     return {
@@ -157,23 +134,33 @@ def get_country_detail(id: str):
         "name": country["name"],
         "models":[],
     }
-# {
-#     "id": "BD",
-#     "name": "Bangladesh",
-#     "models": [
-#         {
-#             "id": "bd-3",
-#             "country": "BD",
-#             "attribution": {
-#                 "author": "KTH",
-#                 "url": "https://www.energy.kth.se/energy-systems/about-the-division-of-energy-systems-1.937036"
-#             },
-#             "description": "This model is developed...",
-#             "disclaimer": "",
-#             "filters": [...],  # You can paste your filter list here
-#             "levers": [...],   # And levers too
-#             "baseYear": 2020,
-#             "timesteps": [2025, 2030]
-#         }
-#     ]
-# }
+
+
+mock_country_model_db = {
+    "NG": {
+        "id": "NG",
+        "name": "Nigeria",
+        "models": [
+            {"id": "bf", "name": "Brownfield"},
+            {"id": "gf", "name": "Greenfield"},
+        ]
+    },
+    "TG": {
+        "id": "TG",
+        "name": "Togo",
+        "models": [
+            {"id": "bf", "name": "Brownfield"},
+            {"id": "gf", "name": "Greenfield"},
+        ]
+    }
+}
+@router.get("/countries/{id}/models",)
+def get_country_models(id: str):
+    models = mock_country_model_db.get(id.upper())
+    if not models:
+        raise HTTPException(status_code=404, detail="Country Models not found")
+    return {
+        "id": id.upper(),
+        "name": models["name"],
+        "models":models["models"],
+    }
