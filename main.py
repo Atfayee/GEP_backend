@@ -1,20 +1,23 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-# from database import engine
-from models.country import SQLModel
-from routers import countries
+from routers import country
 from dotenv import load_dotenv
+import models
 import os
+from database import engine
+from crud.country import init_country_data
 
 load_dotenv()
 VIEWER_URL = os.getenv("DATABASE_URL")
 origins = [
-    "http://localhost:5173",  # Vite dev server
+    "http://localhost:5173",  
     "http://127.0.0.1:5173"
 ]
+
+models.Base.metadata.create_all(engine)
+
 app = FastAPI()
 
-# Allow React frontend to access the API
 app.add_middleware(
     CORSMiddleware,
     # allow_origins=[VIEWER_URL],  # Vite default port
@@ -24,8 +27,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# SQLModel.metadata.create_all(engine)
 
-   
 
-app.include_router(countries.router) 
+
+
+app.include_router(country.router) 
+
+
+@app.on_event("startup")
+def seed_database():
+    init_country_data()
