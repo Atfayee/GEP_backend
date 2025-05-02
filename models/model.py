@@ -1,6 +1,6 @@
 # models/model.py
 from sqlalchemy import Column, String, ForeignKey
-from sqlalchemy.orm import Relationship
+from sqlalchemy.orm import relationship
 from . import Base
 
 class Model(Base):
@@ -9,7 +9,7 @@ class Model(Base):
     country_id = Column(String, ForeignKey("countries.id"),nullable=False)
     description = Column(String)
 
-    country = Relationship("Country", back_populates="models")
+    country = relationship("Country", back_populates="models")
 
 
 

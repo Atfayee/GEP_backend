@@ -1,11 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 from routers import country
+from routers import model
 from dotenv import load_dotenv
 import models
 import os
 from database import engine
 from crud.country import init_country_data
+from crud.model import init_model_data
 
 load_dotenv()
 VIEWER_URL = os.getenv("DATABASE_URL")
@@ -16,7 +19,13 @@ origins = [
 
 models.Base.metadata.create_all(engine)
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_country_data()
+    init_model_data()
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -32,8 +41,5 @@ app.add_middleware(
 
 
 app.include_router(country.router) 
+app.include_router(model.router)
 
-
-@app.on_event("startup")
-def seed_database():
-    init_country_data()
